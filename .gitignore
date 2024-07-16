@@ -139,3 +139,6 @@ result
 
 # Solidity remappings
 **/*/remappings.txt
+
+
+src/.coda-credentials.json
