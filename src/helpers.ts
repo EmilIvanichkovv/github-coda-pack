@@ -102,11 +102,34 @@ export async function getPullRequests(
   if (continuation) {
     url = continuation.nextUrl as string;
   }
+  console.log(`Fetching pull requests from ${url}`);
   let response = await context.fetcher.fetch({ method: "GET", url: url });
   let results = response.body?.map(parsePullRequest);
   let nextUrl = nextUrlFromLinkHeader(response);
   return {
     result: results,
+    continuation: nextUrl ? { nextUrl: nextUrl } : undefined,
+  };
+}
+
+export async function getIssues(
+  [repoUrl, base, state]: any[],
+  context: coda.SyncExecutionContext
+): Promise<coda.GenericSyncFormulaResult> {
+  let { continuation } = context.sync;
+  let { owner, repo } = parseRepoUrl(repoUrl);
+  let params = { per_page: DEFAULT_PAGE_SIZE, base: base, state: state };
+  let url = apiUrl(`/repos/${owner}/${repo}/issues`, params);
+
+  let response = await context.fetcher.fetch({ method: "GET", url: url });
+  let nextUrl = nextUrlFromLinkHeader(response);
+  // Filter out pull requests (node_id starts with "PR_")
+  const issues = response.body.filter(
+    (issue: any) => !issue.node_id.startsWith("PR_")
+  );
+
+  return {
+    result: issues,
     continuation: nextUrl ? { nextUrl: nextUrl } : undefined,
   };
 }

@@ -215,3 +215,55 @@ export const PullRequestSchema = coda.makeObjectSchema({
     "body",
   ],
 });
+
+export const IssueSchema = coda.makeObjectSchema({
+  properties: {
+    title: { type: coda.ValueType.String, required: true },
+    id: { type: coda.ValueType.Number, required: true },
+    number: { type: coda.ValueType.Number, required: true },
+    body: {
+      type: coda.ValueType.String,
+      codaType: coda.ValueHintType.Markdown,
+      required: true,
+    },
+    state: { type: coda.ValueType.String },
+    url: {
+      type: coda.ValueType.String,
+      codaType: coda.ValueHintType.Url,
+      fromKey: "html_url",
+      required: true,
+    },
+    createdAt: {
+      type: coda.ValueType.String,
+      codaType: coda.ValueHintType.DateTime,
+      fromKey: "created_at",
+      required: true,
+    },
+    updatedAt: {
+      type: coda.ValueType.String,
+      codaType: coda.ValueHintType.DateTime,
+      fromKey: "updated_at",
+      required: true,
+    },
+    closedAt: {
+      type: coda.ValueType.String,
+      codaType: coda.ValueHintType.DateTime,
+      fromKey: "closed_at",
+      required: true,
+    },
+    author: {
+      ...UserSchema,
+      fromKey: "user",
+    },
+  },
+  displayProperty: "title",
+  idProperty: "id",
+  featuredProperties: [
+    "number",
+    "state",
+    "createdAt",
+    "updatedAt",
+    "closedAt",
+    "user",
+  ],
+});

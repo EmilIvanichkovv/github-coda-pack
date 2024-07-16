@@ -69,6 +69,19 @@ const PullRequestStateOptional = coda.makeParameter({
   ],
 });
 
+const IssueStateOptional = coda.makeParameter({
+  type: coda.ParameterType.String,
+  name: "state",
+  description:
+    'Returns issues in the given state. If unspecified, defaults to "open".',
+  optional: true,
+  autocomplete: [
+    { display: "Open issues only", value: "open" },
+    { display: "Closed issues only", value: "closed" },
+    { display: "All issues", value: "all" },
+  ],
+});
+
 pack.addSyncTable({
   // This is the name of the sync table, which will show in the UI.
   name: "PullRequests",
@@ -100,6 +113,21 @@ pack.addSyncTable({
     // of results to fetch.
     execute: async function (params, context) {
       return helpers.getPullRequests(params, context);
+    },
+  },
+});
+
+// Add the sync table for issues
+pack.addSyncTable({
+  name: "Issues",
+  identityName: "Issue",
+  schema: schemas.IssueSchema,
+  formula: {
+    name: "SyncIssues",
+    description: "Sync issues from a GitHub repository.",
+    parameters: [RepoUrlParameter, IssueStateOptional],
+    execute: async function (params, context) {
+      return helpers.getIssues(params, context);
     },
   },
 });
