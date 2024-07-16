@@ -1,0 +1,7 @@
+{
+  "name": "github-coda-pack",
+  "packageManager": "yarn@4.0.1",
+  "dependencies": {
+    "@codahq/packs-sdk": "^1.7.9"
+  }
+}
