@@ -1,0 +1,4 @@
+# Nix & Direnv
+.direnv
+result
+.env
