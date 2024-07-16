@@ -146,8 +146,6 @@ pack.addSyncTable({
   },
 });
 
-
-
 // A helper function that parses a repo URL and returns the owner and name.
 function parseRepoUrl(url) {
   let match = url.match(RepoUrlRegex);
