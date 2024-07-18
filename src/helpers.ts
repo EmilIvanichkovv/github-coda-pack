@@ -54,9 +54,10 @@ export function parsePullUrl(url: string): {
 // The user-facing formula uses a url to identify repos in a user-friendly way.
 // We parse such a url into its identifiers.
 export function parseRepoUrl(url: string): { owner: string; repo: string } {
+  console.log(`Parsing repo url: ${url}`);
   let match = coda.ensureExists(
     REPO_URL_REGEX.exec(url),
-    "Received an invalid repo URL"
+    `Received an invalid repo URL: ${url}`
   );
   return {
     owner: match[1],
@@ -132,6 +133,68 @@ export async function getIssues(
     result: issues,
     continuation: nextUrl ? { nextUrl: nextUrl } : undefined,
   };
+}
+
+export async function updateIssue(
+  [repoUrl, issueNumber, title, body, state]: any[],
+  context: coda.ExecutionContext
+): Promise<any> {
+  // const { repoUrl, issueNumber, title, body, state } = params;
+  const { owner, repo } = parseRepoUrl(repoUrl);
+
+  const url = `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}`;
+  console.log(`Updating issue ${issueNumber} in ${repoUrl}`);
+  const response = await context.fetcher.fetch({
+    method: "PATCH",
+    url: url,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: title,
+      body: body,
+      state: state,
+    }),
+  });
+
+  return response.body;
+}
+
+export async function createIssue(
+  params: any,
+  context: coda.ExecutionContext
+): Promise<any> {
+  const [repoUrl, title, body, labels, assignees] = params;
+  const { owner, repo } = parseRepoUrl(repoUrl);
+
+  const url = `https://api.github.com/repos/${owner}/${repo}/issues`;
+
+  console.log(url);
+  console.log(context);
+
+  const response = await context.fetcher.fetch({
+    method: "POST",
+    url: url,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${context.invocationToken}`,
+    },
+    body: JSON.stringify({
+      title: title,
+      body: body,
+      labels: labels ? labels.split(",") : undefined,
+      assignees: assignees ? assignees.split(",") : undefined,
+    }),
+  });
+
+  if (!response.status.toString().startsWith("2")) {
+    console.log(
+      `Failed to create issue: ${response.status} - ${response.body.message}`
+    );
+    throw new coda.UserVisibleError(response.body.message);
+  }
+
+  return response.body;
 }
 
 // This does some basic transformation and unnesting of a pull request
